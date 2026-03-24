@@ -1,49 +1,44 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Navbar from "../../components/NavBar";
-import AppCard from "../../components/AppCard";
+import Navbar from "@/components/Navbar";
+import AppCard from "@/components/AppCard";
+import { developerMe, listApps } from "@/lib/api";
 
-async function getDeveloper() {
-  const cookieStore = await cookies();
-  const cookie = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join("; ");
+export default function DashboardPage() {
+  const router = useRouter();
+  const [developer, setDeveloper] = useState(null);
+  const [apps, setApps] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/developer/me`, {
-    headers: { Cookie: cookie },
-    cache: "no-store",
-  });
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const devData = await developerMe();
+        setDeveloper(devData.developer);
+        const appsData = await listApps();
+        setApps(appsData.apps);
+      } catch (err) {
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
-  if (!res.ok) return null;
-  return res.json();
-}
-
-
-async function getApps() {
-  const cookieStore = await cookies();
-  const cookie = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join("; ");
-
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/list`, {
-    headers: { Cookie: cookie },
-    cache: "no-store",
-  });
-
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.apps;
-}
-
-
-export default async function DashboardPage() {
-  const developerData = await getDeveloper();
-
-  if (!developerData) redirect("/login");
-
-  const apps = await getApps();
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <p className="text-gray-500 text-sm">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950">
-      <Navbar email={developerData.developer.email} />
-
+      <Navbar email={developer?.email} />
       <main className="max-w-5xl mx-auto px-6 py-10">
         <div className="flex items-center justify-between mb-8">
           <div>
