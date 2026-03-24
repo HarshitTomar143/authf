@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import AppCard from "@/components/AppCard";
-import { developerMe, listApps } from "@/lib/api";
+import Navbar from "../../components/NavBar";
+import AppCard from "../../components/AppCard";
+import { developerMe, listApps } from "../../lib/api.js";
 
 export default function DashboardPage() {
   const router = useRouter();
